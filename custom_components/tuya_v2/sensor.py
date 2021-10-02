@@ -540,14 +540,22 @@ class TuyaHaSensor(TuyaHaDevice, SensorEntity):
         sensor_state_class: str,
     ) -> None:
         """Init TuyaHaSensor."""
+        super().__init__(device, device_manager)
         self._code = sensor_code
         self._attr_device_class = sensor_type
-        self._attr_name = self.tuya_device.name + "_" + self._attr_device_class
-        self._attr_unique_id = f"{super().unique_id}{self._code}"
         self._attr_unit_of_measurement = sensor_unit
         self._attr_state_class = sensor_state_class
         self._attr_available = True
-        super().__init__(device, device_manager)
+
+    @property
+    def name(self) -> str:
+        """Return Tuya device name."""
+        return f"{self.tuya_device.name}_{self._attr_device_class}"
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID."""
+        return f"{super().unique_id}{self._code}"
 
     @property
     def state(self) -> StateType:
@@ -563,8 +571,9 @@ class TuyaHaSensor(TuyaHaDevice, SensorEntity):
             __value_range = json.loads(
                 self.tuya_device.status_range.get(self._code).values
             )
-            __state = (__value) * 1.0 / (10 ** __value_range.get("scale"))
-            if __value_range.get("scale") == 0:
+            __scale = __value_range.get("scale")
+            __state = (__value) * 1.0 / (10 ** __scale)
+            if __scale <= 0:
                 return int(__state)
-            return f"%.{__value_range.get('scale')}f" % __state
+            return f"%.{__scale}f" % __state
         return ""
