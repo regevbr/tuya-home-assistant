@@ -107,8 +107,8 @@ class TuyaHaNumber(TuyaHaDevice, NumberEntity):
         self, device: TuyaDevice, device_manager: TuyaDeviceManager, code: str = ""
     ) -> None:
         """Init tuya number device."""
-        self._code = code
         super().__init__(device, device_manager)
+        self._code = code
 
     def set_value(self, value: float) -> None:
         """Update the current value."""
